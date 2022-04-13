@@ -33,11 +33,11 @@ these pins were chosen based on how they react during startup to avoid having th
         linux
 requirements: bl_iot_sdk
 step 1: run the command `export BL60X_SDK_PATH path/to/sdk`
-step 2: run make
+step 2: run make (if it errors out but microwave.bin is in build_out just pretend it didn't error)
 step 3: flash it to the bl602 using your flashing utility of choice
 
         windows
-lol idk xD
+lol idk
 
 #TODO:
 
