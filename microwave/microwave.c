@@ -73,8 +73,8 @@ void startTicker(int time)
 //function to abort the countdown
 void stopTicker()
 {
-    stopHeating();
     xTimerStop(countdown_handle, pdMS_TO_TICKS(20));
+    stopHeating();
     printf("\r\nStopping Ticker\r\n#");
 }
 

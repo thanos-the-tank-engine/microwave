@@ -6,6 +6,7 @@ PROJECT_NAME := microwave
 PROJECT_PATH := $(abspath .)
 PROJECT_BOARD := evb
 export PROJECT_PATH PROJECT_BOARD
+export CONFIG_CHIP_NAME=BL602
 #CONFIG_TOOLPREFIX :=
 
 -include ./proj_config.mk

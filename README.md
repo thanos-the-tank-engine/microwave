@@ -29,6 +29,15 @@ Magnetron: GPIO 5
 
 these pins were chosen based on how they react during startup to avoid having the magnetron get pulsed unintentionally. the pin layout may change in the future.
 
+#How To Build
+        linux
+requirements: bl_iot_sdk
+step 1: run the command `export BL60X_SDK_PATH path/to/sdk`
+step 2: run make
+step 3: flash it to the bl602 using your flashing utility of choice
+
+        windows
+lol idk xD
 
 #TODO:
 
