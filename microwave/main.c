@@ -60,8 +60,8 @@
 #include <fdt.h>
 #include <libfdt.h>
 #include <blog.h>
-#include "bl_gpio.h"
 #include "microwave.h"
+#include "gpio.h"
 
 extern uint8_t _heap_start;
 extern uint8_t _heap_size; // @suppress("Type cannot be resolved")
@@ -183,15 +183,7 @@ static void system_init(void)
 
 static void system_thread_init()
 {
-    bl_gpio_enable_output(11, 1, 0);
-    bl_gpio_enable_output(12, 1, 0);
-    bl_gpio_enable_output(2, 1, 0);
-    bl_gpio_enable_output(5, 1, 0);
-    bl_gpio_output_set(11, 0);
-    bl_gpio_output_set(12, 0);
-    bl_gpio_output_set(2, 0);
-    bl_gpio_output_set(5, 0);
-
+init_gpio_config();
 }
 
 void bfl_main()

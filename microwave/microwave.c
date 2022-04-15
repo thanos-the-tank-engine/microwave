@@ -1,43 +1,43 @@
-// config vars
+/*
+MicrowaveOS
+This file contains all of the code resposible for the main operations of MicrowaveOS.
 
-// maximum acceptable cook time in seconds
-// default: 10 minutes (600 seconds)
-static int maxtime = 600;
-
-//  Pin definitions for the microwave components
-const int light_pin = 2;
-const int turntable_pin = 11;
-const int fan_pin = 12;
-const int magnetron_pin = 5;
+This file is released to the public domain. feel free to do whatever you want with it.
+*/ 
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <cli.h>
-#include "bl_gpio.h"
-#include "microwave.h"
 #include <FreeRTOS.h>
 #include <task.h>
 #include <timers.h>
 #include <bl602_timer.h>
+#include <bl602_pwm.h>
+#include <bl602_glb.h>
+#include "gpio.h"
+#include "appliance_config.h"
 
 //Appliance control functions
 
 //to ensure modularity of this code for compatibility with other appliances in the future, teh appliance-specific functions will be placed here.
 //this might get moved to another file later on
 
-void startHeating()
+void startHeating(int power)
 {
-    bl_gpio_output_set(turntable_pin, 1);
-    bl_gpio_output_set(magnetron_pin, 1);
-    bl_gpio_output_set(fan_pin, 1); 
+    gpio_set(fan_pin, 1); 
+    gpio_set(turntable_pin, 1);
+    //gpio_set(magnetron_pin, 1); no longer needed, we're abusing the PWM to do this the fancy way now
+    PWM_Channel_Set_Threshold2(magnetron_pwm_ch, power);
+    PWM_Channel_Enable(magnetron_pwm_ch);
 }
 
 void stopHeating()
 {
-    bl_gpio_output_set(magnetron_pin, 0);
-    bl_gpio_output_set(turntable_pin, 0);
+    //gpio_set(magnetron_pin, 0); no longer needed, PWM controller does this now. left here in case you want to switch back.
+    PWM_Channel_Disable(magnetron_pwm_ch);
+    gpio_set(turntable_pin, 0);
     vTaskDelay(pdMS_TO_TICKS(2000));
-    bl_gpio_output_set(fan_pin, 0);
+    gpio_set(fan_pin, 0);
 }
 
 
@@ -55,12 +55,12 @@ TimerHandle_t countdown_handle;
 int main_countdown = 0;
 
 //function to start up the countdown ticker
-void startTicker(int time)
+void startTicker(int time, uint8_t power)
 {
     if(time <= maxtime)
     {
         main_countdown = time;
-        startHeating();
+        startHeating(power);
         xTimerStart(countdown_handle, 0);
         printf("\r\nStarting Ticker\r\n#");
     }
@@ -105,17 +105,21 @@ static void TimedCookStarterFunc(char *buf, int len, int argc, char **argv)
 {
     if(argc == 1)
     {
-        printf("usage: timed_cook [minutes] seconds");
+        printf("usage: timed_cook [minutes] seconds [power]");
     }
     else{
         if(argc == 2)
         {
-            startTicker(atoi(argv[1]));
+            startTicker(atoi(argv[1]), 100);
 
         }
         if(argc == 3)
         {
-            startTicker((atoi(argv[1]) * 60) + atoi(argv[2]));
+            startTicker((atoi(argv[1]) * 60) + atoi(argv[2]), 100);
+        }
+        if(argc == 4)
+        {
+            startTicker((atoi(argv[1]) * 60)+ atoi(argv[2]), atoi(argv[3]));
         }
     }
 }
@@ -126,7 +130,7 @@ static void TimerCancelFunc(char *buf, int len, int argc, char **argv)
    stopTicker();
 }
 
-// commands for conotrolling independent parts of the microwave
+// commands for controlling independent parts of the microwave
 static void light(char *buf, int len, int argc, char **argv)
 {
     if(argc != 2)
@@ -135,7 +139,7 @@ static void light(char *buf, int len, int argc, char **argv)
         return;
     }
     int light_state = atoi(argv[1]);
-    bl_gpio_output_set(light_pin, light_state);
+    gpio_set(light_pin, light_state);
     return;
 }
 
@@ -147,7 +151,7 @@ static void hahamicrowavegospiiiiin(char *buf, int len, int argc, char **argv)
         return;
     }
     int spin_state = atoi(argv[1]);
-    bl_gpio_output_set(turntable_pin, spin_state);
+    gpio_set(turntable_pin, spin_state);
     return;
 }
 
@@ -159,7 +163,7 @@ static void fan(char *buf, int len, int argc, char **argv)
         return;
     }
     int fan_state = atoi(argv[1]);
-    bl_gpio_output_set(fan_pin, fan_state);
+    gpio_set(fan_pin, fan_state);
     return;
 }
 
@@ -172,7 +176,7 @@ static void magnetron(char *buf, int len, int argc, char **argv)
         return;
     }
     int magnetron_state = atoi(argv[1]);
-    bl_gpio_output_set(magnetron_pin, magnetron_state);
+    gpio_set(magnetron_pin, magnetron_state);
     return;
 }
 
