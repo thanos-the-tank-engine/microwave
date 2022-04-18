@@ -1,7 +1,7 @@
 /*
 
 MicrowaveOS gpio functions
-this file contains the tandardized functions for gpio handling within MicrowaveOS
+this file contains the standardized functions for gpio handling within MicrowaveOS
 
 Like the rest of MicrowaveOS this file is released to the public domain. you may do with it whatever you please.
 */
@@ -18,10 +18,10 @@ void conf_pwm(PWM_CH_ID_Type ch)
 PWM_CH_CFG_Type cfg; 
 
 cfg.ch = ch;
-//clock is set up to go about every 40 milliseconds, not exact because that would make this a bit more complicated, and it doesn't really matter how precise this is.
+//clock is set up to go about every 160 milliseconds, not exact because that would make this a bit more complicated, and it doesn't really matter how precise this is.
 //this enables our abuse of the PWM controller. the slow clock gives us the desired timescale
 cfg.clk = PWM_CLK_32K;
-cfg.clkDiv = 1312;
+cfg.clkDiv = 5248;
 //these two are undocumented, but I believe stopmode decides if you want it to finish the cycle it's in already when disabled, and polarity seems to allow you to invert the output.
 cfg.stopMode = PWM_STOP_ABRUPT;
 cfg.pol = PWM_POL_NORMAL;

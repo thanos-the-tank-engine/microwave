@@ -34,7 +34,7 @@
  //My main changes are moving around the functions to be a bit more organized and implementing some init tasks to handle gpios during startup.
  //otherwise this is identical to the main.c file found in the sdk_app_cli demo from the bl_iot_sdk.
 
-
+ //TODO: install a new lib for shell handling and then rip out everyting high-level in the sdk from this
  //TODO: at some point this should probably be replaced with a version written from scratch for the project. until then this works fine.
   
 #include <FreeRTOS.h>

@@ -24,11 +24,18 @@ This file is released to the public domain. feel free to do whatever you want wi
 
 void startHeating(int power)
 {
-    gpio_set(fan_pin, 1); 
-    gpio_set(turntable_pin, 1);
-    //gpio_set(magnetron_pin, 1); no longer needed, we're abusing the PWM to do this the fancy way now
-    PWM_Channel_Set_Threshold2(magnetron_pwm_ch, power);
-    PWM_Channel_Enable(magnetron_pwm_ch);
+    if(power >= minpower)
+    {
+        gpio_set(fan_pin, 1); 
+        gpio_set(turntable_pin, 1);
+        //gpio_set(magnetron_pin, 1); no longer needed, we're abusing the PWM to do this the fancy way now
+        PWM_Channel_Set_Threshold2(magnetron_pwm_ch, power);
+        PWM_Channel_Enable(magnetron_pwm_ch);
+    }
+    else
+    {
+        printf("error: power level is below minimum! abort timer!!");
+    }
 }
 
 void stopHeating()
@@ -57,7 +64,7 @@ int main_countdown = 0;
 //function to start up the countdown ticker
 void startTicker(int time, uint8_t power)
 {
-    if(time <= maxtime)
+    if(time <= maxtime && power >= minpower)
     {
         main_countdown = time;
         startHeating(power);
@@ -66,16 +73,24 @@ void startTicker(int time, uint8_t power)
     }
     else
     {
-        printf("\r\nERROR: attempt to initialize timed cook for longer than maximum allowed time!");
+        if(time > maxtime)
+        {
+            printf("\r\nERROR: attempt to initialize timed cook for longer than maximum allowed time!");
+        }
+        if(power < minpower)
+        {
+            printf("\r\nERROR: attempt to initialize timed cook at too low of a power level!");
+        }
+        printf("\r\nTimed cook sequence aborted!!\r\n#");
     }
 }
 
 //function to abort the countdown
 void stopTicker()
 {
+    printf("\r\nStopping Ticker\r\n#");
     xTimerStop(countdown_handle, pdMS_TO_TICKS(20));
     stopHeating();
-    printf("\r\nStopping Ticker\r\n#");
 }
 
 //countdown ticker task
