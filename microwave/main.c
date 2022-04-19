@@ -60,6 +60,7 @@
 #include <fdt.h>
 #include <libfdt.h>
 #include <blog.h>
+#include <bl602_timer.h>
 #include "microwave.h"
 #include "gpio.h"
 
@@ -206,6 +207,13 @@ void bfl_main()
     xTaskCreateStatic(aos_loop_proc, (char*)"event_loop", 1024, NULL, 15, aos_loop_proc_stack, &aos_loop_proc_task);
 
     puts("[OS] Starting OS Scheduler...\r\n");
+    //configure and then enable the watchdog using the low-level timer API
+    WDT_Disable();
+    WDT_Set_Clock(TIMER_CLKSRC_1K, 1);
+    WDT_SetCompValue(500);
+    WDT_ResetCounterValue();
+    WDT_IntMask(WDT_INT, MASK);
+    WDT_Enable();
     vTaskStartScheduler();
 }
 
@@ -287,4 +295,12 @@ void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCBBuffer, StackTyp
     Note that, as the array is necessarily of type StackType_t,
     configMINIMAL_STACK_SIZE is specified in words, not bytes. */
     *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+}
+
+//uses the tick hook to pet the watchdog so that if for any reason freertos locks up the watchdog pushes a hard reset.
+//this ensures that the software is constantly fail-safe; there is no condition where the magnetron is enabled and not going to be automatically cut off.
+//the routine controlling it is on a constant countdown and the gpio states are set on boot. no method to enable the magnetron without starting the timer should be available.
+void vApplicationTickHook( void )
+{
+WDT_ResetCounterValue();
 }

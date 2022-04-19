@@ -11,15 +11,12 @@ This file is released to the public domain. feel free to do whatever you want wi
 #include <FreeRTOS.h>
 #include <task.h>
 #include <timers.h>
-#include <bl602_timer.h>
-#include <bl602_pwm.h>
-#include <bl602_glb.h>
 #include "gpio.h"
 #include "appliance_config.h"
 
 //Appliance control functions
 
-//to ensure modularity of this code for compatibility with other appliances in the future, teh appliance-specific functions will be placed here.
+//to ensure modularity of this code for compatibility with other appliances in the future, the appliance-specific functions will be placed here.
 //this might get moved to another file later on
 
 void startHeating(int power)
@@ -28,9 +25,8 @@ void startHeating(int power)
     {
         gpio_set(fan_pin, 1); 
         gpio_set(turntable_pin, 1);
-        //gpio_set(magnetron_pin, 1); no longer needed, we're abusing the PWM to do this the fancy way now
-        PWM_Channel_Set_Threshold2(magnetron_pwm_ch, power);
-        PWM_Channel_Enable(magnetron_pwm_ch);
+        //gpio_set(magnetron_pin, 1); no longer needed, we're abusing the PWM to do this the fancy way now. leaving this behind in case we want to switch back.
+        pwm_start(magnetron_pwm_ch, power);
     }
     else
     {
@@ -41,7 +37,7 @@ void startHeating(int power)
 void stopHeating()
 {
     //gpio_set(magnetron_pin, 0); no longer needed, PWM controller does this now. left here in case you want to switch back.
-    PWM_Channel_Disable(magnetron_pwm_ch);
+    pwm_stop(magnetron_pwm_ch);
     gpio_set(turntable_pin, 0);
     vTaskDelay(pdMS_TO_TICKS(2000));
     gpio_set(fan_pin, 0);
@@ -222,14 +218,6 @@ int main_cli_init(void)
     printf("\r\n  \\/_/  \\/_/   \\/_/   \\/_____/   \\/_/ /_/   \\/_____/   \\/_/   \\/_/   \\/_/\\/_/   \\/_/      \\/_____/      \\/_____/   \\/_/\\/_/   \\/_____/   \\/_____/   \\/_____/"); 
     printf("\r\n                                                    E  N  T  E  R    C  O  M  M  A  N  D\r\n");
 
-    //configure and then enable the watchdog using the low-level timer API
-    WDT_Disable();
-    WDT_Set_Clock(TIMER_CLKSRC_1K, 1);
-    WDT_SetCompValue(1000);
-    WDT_ResetCounterValue();
-    WDT_IntMask(WDT_INT, MASK);
-    WDT_Enable();
-
     return 0;
 }
 
@@ -248,11 +236,3 @@ const static struct cli_command cmds_user[] STATIC_CLI_CMD_ATTRIBUTE = {
 
 
 };
-
-//uses the tick hook to pet the watchdog so that if for any reason freertos locks up the watchdog pushes a hard reset.
-//this ensures that the software is constantly fail-safe; there is no condition where the magnetron is enabled and not going to be automatically cut off.
-//the routine controlling it is on a constant countdown and the gpio states are set on boot. no method to enable the magnetron without starting the timer should be available.
-void vApplicationTickHook( void )
-{
-WDT_ResetCounterValue();
-}

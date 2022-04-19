@@ -25,18 +25,31 @@ cfg.clkDiv = 5248;
 //these two are undocumented, but I believe stopmode decides if you want it to finish the cycle it's in already when disabled, and polarity seems to allow you to invert the output.
 cfg.stopMode = PWM_STOP_ABRUPT;
 cfg.pol = PWM_POL_NORMAL;
-//we actually have quite a fancy setup here with dual thresholds nd variable perios, but we're using neither of those features really.
-//period is set to 100 so we can just yeet a percentage at threshold 2, and threshold 1 is just set at the beginning of the period, so it's basicaly just ignored.
+//we actually have quite a fancy setup here with dual thresholds and variable periods, but we're using neither of those features.
+//period is set to 99 so we can just yeet a percentage at threshold 2, and threshold 1 is just set at the beginning of the period, so it's basicaly just ignored.
+//at 100 threshold2 is set outside of the period, meaning that the PWM channel just acts like a gpio set to high. probably not meant to be used this way but it works fine.
 cfg.period = 99;
 cfg.threshold1 = 0;
 cfg.threshold2 = 100;
 //set to zero because we aren't using the interrupts
 cfg.intPulseCnt = 0;
-//ensure channel is disabled first, then push he config to it
+//ensure channel is disabled first, then push the config to it
 PWM_Channel_Disable(ch);
 PWM_Channel_Init(&cfg);
 }
 
+//function that starts up a PWM channel at the desired power level
+void pwm_start(int ch, int level)
+{
+    PWM_Channel_Set_Threshold2(ch, level);
+    PWM_Channel_Enable(ch);
+}
+
+//function that stops a pwm channel
+void pwm_stop(int ch)
+{
+    PWM_Channel_Disable(ch);
+}
 
 //Implementation of the function to configure a gpio pin. we could use the hal function but tht would make this incompatible with the upcoming rewrite removing all of the high level sdk functions.
 void conf_gpio(int pin, int function, int mode)
