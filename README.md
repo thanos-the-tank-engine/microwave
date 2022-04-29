@@ -33,10 +33,11 @@ these pins were chosen based on how they react during startup to avoid having th
 
 linux  
 
-requirements: bl_iot_sdk  
-step 1: run the command `export BL60X_SDK_PATH path/to/sdk`  
-step 2: run make (if it errors out but microwave.bin is in build_out just pretend it didn't error)  
-step 3: flash it to the bl602 using your flashing utility of choice  
+requirements: bl_iot_sdk
+
+1. run the command `export BL60X_SDK_PATH path/to/sdk`  
+2. run make (if it errors out but microwave.bin is in build_out just pretend it didn't error)  
+3. flash it to the bl602 using your flashing utility of choice  
 
 windows
 
@@ -44,20 +45,23 @@ lol idk
 
 # TODO:
 
-Backend:  
-*Rewrite to remove all aos functions from project, ideally bringing it down to just using the low-level drivers directly
-*implement wifi connectivity  
-*implement SSH and Telnet access to the cli  
-*implement sensors and sensor cooking modes  
-*implement cooking mode database and loader  
+Backend:
 
-Frontend:  
-*implement display driver  
-*implement keypad driver  
-*set up LVGL  
-*design entire UI  
+* Rewrite to remove all aos functions from project, ideally bringing it down to just using the low-level drivers directly
+* implement wifi connectivity
+* implement SSH and Telnet access to the cli
+* implement sensors and sensor cooking modes
+* implement cooking mode database and loader
 
-Other:  
-*name project  
-*rewrite sections of the source code that were ripped from the bl_iot_sdk demos  
-*ensure code is modular enough to be ported over to other appliances without too much work  
+Frontend:
+
+* implement display driver
+* implement keypad driver
+* set up LVGL
+* design entire UI
+
+Other:
+
+* name project
+* rewrite sections of the source code that were ripped from the bl_iot_sdk demos
+* ensure code is modular enough to be ported over to other appliances without too much work
